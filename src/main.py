@@ -1,0 +1,49 @@
+import json
+import logging
+from .core import process_data
+
+#  Standard AWS Lambda logger configuration
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def handler(event, context):
+    logger.info(f"Incoming event: {json.dumps(event)}")
+
+    try:
+        # 1. Intelleigent data load (Adapter logic)
+        if "body" in event:
+            if isinstance(event["body"], str):
+                payload = json.loads(event["body"])
+            else:
+                payload = event["body"]
+        else:
+            payload = event
+
+        # 2. Core logic call
+        result = process_data(payload)
+
+        # 3. Success response
+        return {
+            "statusCode": 200,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps(result)
+        }
+# 4. Error handling
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON received: {str(e)}")
+        return {
+            "statusCode": 400,
+            "body": json.dumps({
+                "error": "Invalid JSON input",
+                "details": "The provided input is not valid JSON."
+            })
+        }
+    except Exception as e:
+        logger.error(f"Unexpected system error: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": json.dumps({
+                "error": "Internal Server Error",
+                "details": "An unexpected error occurred. Please try again later. Check a CloudWatch logs for more details."
+            })
+        }

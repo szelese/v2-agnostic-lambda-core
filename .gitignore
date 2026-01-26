@@ -76,7 +76,7 @@ Thumbs.db
 docker-compose.override.yml
 
 # =================================================================
-# DATA AND DIAGNOSIS FILES
+# DATA, DOCUMENTATION AND DIAGNOSIS
 # =================================================================
 # If you download data for testing, do not include it in the repository
 data/*.csv
