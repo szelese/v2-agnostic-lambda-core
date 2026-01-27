@@ -53,8 +53,9 @@ jobs:
             aws lambda update-function-code \
               --function-name v2-agnostic-lambda \
               --image-uri ${{ steps.login-ecr.outputs.registry }}/v2-agnostic-lambda-core:latest
-            # 2. Wait 2 sec, let aws record the new code
-            sleep 2
+            # 2. PRO: Wait for AWS to complete the code update
+            echo "Waiting for Lambda update to complete..."
+            aws lambda wait function-updated --function-name v2-agnostic-lambda
              # 3. A version (Commit SHA) setup environment variable
              SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
              aws lambda update-function-configuration \
