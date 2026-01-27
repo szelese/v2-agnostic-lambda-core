@@ -29,6 +29,7 @@ jobs:
           aws-region: eu-north-1
 
       - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Set up Docker Buildx
@@ -45,13 +46,41 @@ jobs:
             --provenance=false \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             --push .
-
-      - name: Update Lambda Function
-        env:
-          ECR_REGISTRY: 330552995255.dkr.ecr.eu-north-1.amazonaws.com
-          ECR_REPOSITORY: v2-agnostic-lambda-core
-          IMAGE_TAG: latest
+      
+      - name: Deploy and Set Version
         run: |
-          aws lambda update-function-code \
-            --function-name v2-agnostic-lambda \
-            --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            # 1. The code (container) refresh
+            aws lambda update-function-code \
+              --function-name v2-agnostic-lambda-core \
+              --image-uri ${{ steps.login-ecr.outputs.registry }}/v2-agnostic-lambda-core:latest
+            # 2. Wait 2 sec, let aws record the new code
+            sleep 2
+             # 3. A version (Commit SHA) setup environment variable
+             SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+             aws lambda update-function-configuration \
+                --function-name v2-agnostic-lambda-core \
+                --environment "Variables={VERSION=$SHORT_SHA}"
+
+      - name: Smart Smoke Test (Version Validation)
+        run: |
+          EXPECTED_VERSION=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "Waiting for version: $EXPECTED_VERSION"
+          
+          # Maximum 20 try wtih 2sec wait
+          for i in {1..20}; do
+            RESPONSE=$(curl -s ${{ secrets.LAMBDA_URL }})
+            ACTUAL_VERSION=$(echo $RESPONSE | python3 -c "import sys, json; print(json.load(sys.stdin).get('version', ''))")
+            
+            echo "Check $i: Actual version in cloud: '$ACTUAL_VERSION'"
+
+            if [ "$ACTUAL_VERSION" == "$EXPECTED_VERSION" ]; then
+              echo "Succes: The new version: ($ACTUAL_VERSION) is online!"
+              exit 0
+            fi
+            
+            echo "Old version running, still waiting..."
+            sleep 2
+          done
+          
+          echo "Error: Time-out. Lamba is not updated to $EXPECTED_VERSION version"
+          exit 1  

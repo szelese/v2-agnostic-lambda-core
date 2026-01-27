@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 from .core import process_data
@@ -7,6 +8,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 def handler(event, context):
+    version=os.environ.get("VERSION", "dev-manual")  
     logger.info(f"Incoming event: {json.dumps(event)}")
 
     try:
@@ -26,16 +28,22 @@ def handler(event, context):
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps(result)
+            "body": json.dumps({
+                "version": version,
+                "status": "success",
+                "message": "Request processed successfully.",
+                "result": result
+            })
         }
-# 4. Error handling
+    # 4. Error handling
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON received: {str(e)}")
         return {
             "statusCode": 400,
             "body": json.dumps({
                 "error": "Invalid JSON input",
-                "details": "The provided input is not valid JSON."
+                "details": "The provided input is not valid JSON.",
+                "version": version
             })
         }
     except Exception as e:
@@ -44,6 +52,7 @@ def handler(event, context):
             "statusCode": 500,
             "body": json.dumps({
                 "error": "Internal Server Error",
-                "details": "An unexpected error occurred. Please try again later. Check a CloudWatch logs for more details."
+                "details": "An unexpected error occurred. Please try again later. Check a CloudWatch logs for more details.",
+                "version": version
             })
         }
