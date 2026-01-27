@@ -15,6 +15,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Quality and Security Gate
+        run: |
+          pip install flake8 bandit pytest
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          bandit -r . -ll
+          pytest
+
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
