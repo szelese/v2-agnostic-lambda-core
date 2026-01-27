@@ -38,7 +38,7 @@ jobs:
       - name: Build and Push Docker Image
         env:
           ECR_REGISTRY: 330552995255.dkr.ecr.eu-north-1.amazonaws.com
-          ECR_REPOSITORY: v2-agnostic-lambda
+          ECR_REPOSITORY: v2-agnostic-lambda-core
           IMAGE_TAG: latest
         run: |
           docker buildx build \
@@ -52,7 +52,7 @@ jobs:
             # 1. The code (container) refresh
             aws lambda update-function-code \
               --function-name v2-agnostic-lambda \
-              --image-uri ${{ steps.login-ecr.outputs.registry }}/v2-agnostic-lambda:latest
+              --image-uri ${{ steps.login-ecr.outputs.registry }}/v2-agnostic-lambda-core:latest
             # 2. Wait 2 sec, let aws record the new code
             sleep 2
              # 3. A version (Commit SHA) setup environment variable
