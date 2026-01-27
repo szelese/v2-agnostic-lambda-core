@@ -38,7 +38,7 @@ jobs:
       - name: Build and Push Docker Image
         env:
           ECR_REGISTRY: 330552995255.dkr.ecr.eu-north-1.amazonaws.com
-          ECR_REPOSITORY: v2-agnostic-lambda-core
+          ECR_REPOSITORY: v2-agnostic-lambda
           IMAGE_TAG: latest
         run: |
           docker buildx build \
@@ -51,14 +51,14 @@ jobs:
         run: |
             # 1. The code (container) refresh
             aws lambda update-function-code \
-              --function-name v2-agnostic-lambda-core \
-              --image-uri ${{ steps.login-ecr.outputs.registry }}/v2-agnostic-lambda-core:latest
+              --function-name v2-agnostic-lambda \
+              --image-uri ${{ steps.login-ecr.outputs.registry }}/v2-agnostic-lambda:latest
             # 2. Wait 2 sec, let aws record the new code
             sleep 2
              # 3. A version (Commit SHA) setup environment variable
              SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
              aws lambda update-function-configuration \
-                --function-name v2-agnostic-lambda-core \
+                --function-name v2-agnostic-lambda \
                 --environment "Variables={VERSION=$SHORT_SHA}"
 
       - name: Smart Smoke Test (Version Validation)
@@ -74,7 +74,7 @@ jobs:
             echo "Check $i: Actual version in cloud: '$ACTUAL_VERSION'"
 
             if [ "$ACTUAL_VERSION" == "$EXPECTED_VERSION" ]; then
-              echo "Succes: The new version: ($ACTUAL_VERSION) is online!"
+              echo "Success: The new version: ($ACTUAL_VERSION) is online!"
               exit 0
             fi
             
@@ -82,5 +82,5 @@ jobs:
             sleep 2
           done
           
-          echo "Error: Time-out. Lamba is not updated to $EXPECTED_VERSION version"
+          echo "Error: Time-out. Lambda is not updated to $EXPECTED_VERSION version"
           exit 1  
