@@ -6,7 +6,8 @@
             "Action": [
                 "lambda:UpdateFunctionCode",
                 "lambda:UpdateFunctionConfiguration",
-                "lambda:GetFunction"
+                "lambda:GetFunction",
+                "lambda:GetFunctionConfiguration"
             ],
             "Resource": "arn:aws:lambda:eu-north-1:330552995255:function:v2-agnostic-lambda"
         }
