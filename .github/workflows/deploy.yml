@@ -11,7 +11,12 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      VERSION: "" # Will be set during deployment
     steps:
+      - name: Set start time
+        run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -49,6 +54,8 @@ jobs:
       
       - name: Deploy and Set Version
         run: |
+            SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+            echo "VERSION=$SHORT_SHA" >> $GITHUB_ENV
             # 1. The code (container) refresh
             aws lambda update-function-code \
               --function-name v2-agnostic-lambda \
@@ -56,11 +63,11 @@ jobs:
             # 2. PRO: Wait for AWS to complete the code update
             echo "Waiting for Lambda update to complete..."
             aws lambda wait function-updated --function-name v2-agnostic-lambda
-             # 3. A version (Commit SHA) setup environment variable
-             SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-             aws lambda update-function-configuration \
-                --function-name v2-agnostic-lambda \
-                --environment "Variables={VERSION=$SHORT_SHA}"
+            # 3. A version (Commit SHA) setup environment variable
+            SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+            aws lambda update-function-configuration \
+              --function-name v2-agnostic-lambda \
+              --environment "Variables={VERSION=$SHORT_SHA}"
 
       - name: Smart Smoke Test (Version Validation)
         run: |
@@ -85,3 +92,32 @@ jobs:
           
           echo "Error: Time-out. Lambda is not updated to $EXPECTED_VERSION version"
           exit 1  
+
+      - name: Notify SNS on Status
+        if: always()
+        run: |
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          STATUS="${{ job.status }}"
+          VERSION_INFO="${{ env.VERSION || 'manual-deploy' }}"
+          REPO="${{ github.repository }}"
+          COMMIT="${{ github.sha }}"
+
+          MSG_BODY=$(cat <<EOF
+          V2 pipeline has run.
+
+          Total run time: ${DURATION} seconds
+          Status: ${STATUS}
+          Version: ${VERSION_INFO}
+          Repository: ${REPO}
+          Commit: ${COMMIT}
+
+          Logs: https://github.com/${REPO}/actions/runs/${{ github.run_id }}
+          EOF
+          )
+
+          aws sns publish \
+            --topic-arn ${{ secrets.SNS_TOPIC_ARN }} \
+            --subject "v2 Deploy Alert: ${STATUS}" \
+            --message "${MSG_BODY}"   
+         
