@@ -11,11 +11,18 @@ def handler(event, context):
     version=os.environ.get("VERSION", "dev-manual")  
     logger.info(f"Incoming event: {json.dumps(event)}")
 
+    security_headers = {
+        "Content-Type": "application/json",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store, max-age=0"
+    }
+
     path = event.get("rawPath", "/")
     if path != "/":
         return {
             "statusCode": 404,
-            "headers": {"Content-Type": "application/json"},
+            "headers": security_headers,
             "body": json.dumps({
                 "error": "Not Found",
                 "path": path,
@@ -39,12 +46,7 @@ def handler(event, context):
         # 3. Success response
         return {
             "statusCode": 200,
-            "headers": {
-                "Content-Type": "application/json",
-                "Strict-Transport-Security": "max-age=31536000; includeSubDomains", # HSTS FIX
-                "X-Content-Type-Options": "nosniff",                              # NOSNIFF FIX
-                "Cache-Control": "no-store, max-age=0"                           # CACHE FIX
-          },
+            "headers": security_headers,
             "body": json.dumps({
                 "version": version,
                 "status": "success",
@@ -57,6 +59,7 @@ def handler(event, context):
         logger.error(f"Invalid JSON received: {str(e)}")
         return {
             "statusCode": 400,
+            "headers": security_headers,
             "body": json.dumps({
                 "error": "Invalid JSON input",
                 "details": "The provided input is not valid JSON.",
@@ -67,6 +70,7 @@ def handler(event, context):
         logger.error(f"Unexpected system error: {str(e)}")
         return {
             "statusCode": 500,
+            "headers": security_headers,
             "body": json.dumps({
                 "error": "Internal Server Error",
                 "details": "An unexpected error occurred. Please try again later. Check a CloudWatch logs for more details.",
