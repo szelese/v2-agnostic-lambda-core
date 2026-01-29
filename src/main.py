@@ -15,7 +15,9 @@ def handler(event, context):
         "Content-Type": "application/json",
         "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
         "X-Content-Type-Options": "nosniff",
-        "Cache-Control": "no-store, max-age=0"
+        "Cache-Control": "no-cache, no-store, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
     }
 
     path = event.get("rawPath", "/")
