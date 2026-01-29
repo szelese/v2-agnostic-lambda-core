@@ -27,7 +27,12 @@ def handler(event, context):
         # 3. Success response
         return {
             "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
+            "headers": {
+                "Content-Type": "application/json",
+                "Strict-Transport-Security": "max-age=31536000; includeSubDomains", # HSTS FIX
+                "X-Content-Type-Options": "nosniff",                              # NOSNIFF FIX
+                "Cache-Control": "no-store, max-age=0"                           # CACHE FIX
+          },
             "body": json.dumps({
                 "version": version,
                 "status": "success",
