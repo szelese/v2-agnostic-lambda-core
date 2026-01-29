@@ -11,6 +11,18 @@ def handler(event, context):
     version=os.environ.get("VERSION", "dev-manual")  
     logger.info(f"Incoming event: {json.dumps(event)}")
 
+    path = event.get("rawPath", "/")
+    if path != "/":
+        return {
+            "statusCode": 404,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({
+                "error": "Not Found",
+                "path": path,
+                "version": version
+            })
+        }
+
     try:
         # 1. Intelleigent data load (Adapter logic)
         if "body" in event:
