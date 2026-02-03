@@ -43,14 +43,12 @@ This diagram illustrates the complete CI/CD process from a developer pushing cod
 
 ### 2. Hexagonal "Agnostic" Design
 The core logic: `core.py` is completely independent of the AWS runtime. The `main.py` acts strictly as a Lambda Adapter. This ensures the core business logic remains **protected and isolated** from the infrastructure environment, making the system highly portable and testable without cloud dependencies.
+
 ![V2 Core](docs/v2-core.png)
 
 
 
 ### 3. Verified Performance (Locust)
-
-
-[Image of Serverless Architecture]
 
 Under heavy load testing, the system maintained a consistent **44 ms median response time**. 
 * **Throughput:** Validated up to 600+ RPS.
@@ -61,15 +59,14 @@ Under heavy load testing, the system maintained a consistent **44 ms median resp
 * **Hardened Headers:** Built-in HSTS, X-Content-Type-Options, and Cache-Control protection.
 * **Observability:** Real-time health monitoring via CloudWatch Alarms and SNS notification chain.
 
----
 
 ## 📖 Documentation & Reproduction
 
 Detailed technical guides for reproduction and audit:
-* **[v2 Step-by-Step Guide](./v2-stepbystep.docx):** Complete manual reproduction guide.
-* **[v2 Test & Audit Results](./v2-tests.docx):** Detailed performance and security analysis.
-* **[Locust HTML Report (150 users)](./v2_performance_report_150.html):** Performance baseline before AWS soft limit.
-* **[Locust HTML Report (1000 users)](./v2_performance_report.html):** Raw performance data for the high-concurrency test.
+* **[v2 Step-by-Step Guide](docs/v2-stepbystep.docx):** Complete manual reproduction guide.
+* **[v2 Test & Audit Results](docs/v2-tests.docx):** Detailed performance and security analysis.
+* **[Locust HTML Report (150 users)](docs/v2_performance_report_150.html):** Performance baseline before AWS soft limit.
+* **[Locust HTML Report (1000 users)](docs/v2_performance_report.html):** Raw performance data for the high-concurrency test.
 
 ---
 
@@ -85,4 +82,4 @@ While v2 perfected the **Technical Core**, the deployment remains manual to ensu
 ---
 
 ## ✍️ Author & Legal
-**Ervin Széles** © 2026. This project is a professional architectural upgrade. Re-use or modification requires prior permission.
+**Ervin Wallin** © 2026. This project is a professional architectural upgrade. Re-use or modification requires prior permission.
