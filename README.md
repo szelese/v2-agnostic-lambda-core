@@ -63,10 +63,10 @@ Under heavy load testing, the system maintained a consistent **44 ms median resp
 ## 📖 Documentation & Reproduction
 
 Detailed technical guides for reproduction and audit:
-* **[v2 Step-by-Step Guide](docs/v2-stepbystep.docx):** Complete manual reproduction guide.
-* **[v2 Test & Audit Results](docs/v2-tests.docx):** Detailed performance and security analysis.
-* **[Locust HTML Report (150 users)](docs/v2_performance_report_150.html):** Performance baseline before AWS soft limit.
-* **[Locust HTML Report (1000 users)](docs/v2_performance_report.html):** Raw performance data for the high-concurrency test.
+* **[v2 Step-by-Step Guide](docs/v2-stepbystep.pdf):** Complete manual reproduction guide.
+* **[v2 Test & Audit Results](docs/v2-tests.pdf):** Detailed performance and security analysis.
+* **[Locust HTML Report (150 users)](https://szelese.github.io/v2-agnostic-lambda-core/v2_performance_report_150.html):** Performance baseline before AWS soft limit.
+* **[Locust HTML Report (1000 users)](https://szelese.github.io/v2-agnostic-lambda-core/v2_performance_report.html):** Raw performance data for the high-concurrency test.
 
 ---
 
